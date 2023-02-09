@@ -1,0 +1,16 @@
+syntax = "proto3";
+package music.api.v1;
+
+service MusicService {
+  rpc getPlaylist(PlayListRequest) returns (PlayList);
+}
+
+message SongDescription {
+  string name = 1;
+}
+
+message PlayList {
+  repeated SongDescription song = 1;
+}
+
+message PlayListRequest {}
