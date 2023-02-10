@@ -10,6 +10,10 @@ public class Client {
                 .build();
         var stub = MusicServiceGrpc.newBlockingStub(channel);
         System.out.println("Get playlist: ");
-        System.out.println(stub.getPlaylist(Music.PlayListRequest.newBuilder().build()));
+        var start = System.currentTimeMillis();
+        for (int i = 0; i <= 100; i++)
+            stub.getPlaylist(Music.PlayListRequest.newBuilder().build());
+        var end = System.currentTimeMillis();
+        System.out.println("TIme: " + (end - start));
     }
 }
