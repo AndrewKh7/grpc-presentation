@@ -42,15 +42,25 @@ public class MusicServiceImpl extends MusicServiceGrpc.MusicServiceImplBase {
         observer.setOnCloseHandler(() -> System.out.println("Close handler"));
         var song = songs.get(request.getName());
         for(Integer i: song) {
-            while (!observer.isReady() || observer.isCancelled()) {}
-            if (observer.isCancelled()) {
-                System.out.println("Stream canceled");
-                return;
-            }
+            if (i> 1050) work(observer);
             System.out.println(request.getName() + ": " + i);
             responseObserver.onNext(Music.Song.newBuilder().setFrame(i).build());
 
         };
         observer.onCompleted();
+    }
+
+    private void work(ServerCallStreamObserver obs) {
+        for(int i = 0; i < 100; i++) {
+            try {
+                Thread.sleep(200);
+                if (obs.isCancelled()) {
+                    System.out.println("Canceled in work");
+                    throw  new InterruptedException("Canceled work by client");
+                }
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 }
