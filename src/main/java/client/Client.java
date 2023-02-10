@@ -13,16 +13,14 @@ public class Client {
     public static void main(String[] args) throws InterruptedException {
         var channel = client.start();
         player = new Player(channel);
-        player.playSong("Song100");
-        Thread.sleep(5000);
-        player.close();
+        System.out.println(player.getPlayList());
 
 
         new Scanner(System.in).next();
     }
 
     private ManagedChannel start() {
-        return ManagedChannelBuilder.forAddress("localhost", 9090)
+        return ManagedChannelBuilder.forAddress("localhost", 9091)
                 .usePlaintext()
                 .build();
     }

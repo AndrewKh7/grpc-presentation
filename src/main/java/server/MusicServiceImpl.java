@@ -29,6 +29,7 @@ public class MusicServiceImpl extends MusicServiceGrpc.MusicServiceImplBase {
                 .map(k -> Music.SongDescription.newBuilder().setName(k).build())
                 .collect(Collectors.toList());
         var playList = Music.PlayList.newBuilder().addAllSong(list).build();
+        work((ServerCallStreamObserver) responseObserver);
         responseObserver.onNext(playList);
         responseObserver.onCompleted();
     }
