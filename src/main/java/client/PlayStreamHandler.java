@@ -2,7 +2,6 @@ package client;
 
 import io.grpc.stub.ClientCallStreamObserver;
 import io.grpc.stub.ClientResponseObserver;
-import io.grpc.stub.StreamObserver;
 import music.api.v1.Music;
 
 public class PlayStreamHandler implements ClientResponseObserver<Music.SongDescription, Music.Song> {
@@ -34,7 +33,10 @@ public class PlayStreamHandler implements ClientResponseObserver<Music.SongDescr
     }
 
     @Override
-    public void onError(Throwable t) { }
+    public void onError(Throwable t) {
+        System.out.println("invoke on Error");
+        t.printStackTrace();
+    }
 
     @Override
     public void onCompleted() {
@@ -43,5 +45,10 @@ public class PlayStreamHandler implements ClientResponseObserver<Music.SongDescr
 
     public void requestData(int cnt) {
              requestStream.request(cnt);
+    }
+
+    public void close() {
+        requestStream.onError(null);
+        requestStream.cancel("CANCEL", null);
     }
 }

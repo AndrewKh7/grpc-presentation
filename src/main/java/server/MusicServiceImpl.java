@@ -38,9 +38,15 @@ public class MusicServiceImpl extends MusicServiceGrpc.MusicServiceImplBase {
                      io.grpc.stub.StreamObserver<music.api.v1.Music.Song> responseObserver) {
         var observer = (ServerCallStreamObserver<Music.Song>) responseObserver;
         observer.disableAutoRequest();
+        observer.setOnCancelHandler(() -> System.out.println("Cancel stream"));
+        observer.setOnCloseHandler(() -> System.out.println("Close handler"));
         var song = songs.get(request.getName());
         for(Integer i: song) {
-            while (!observer.isReady()) {}
+            while (!observer.isReady() || observer.isCancelled()) {}
+            if (observer.isCancelled()) {
+                System.out.println("Stream canceled");
+                return;
+            }
             System.out.println(request.getName() + ": " + i);
             responseObserver.onNext(Music.Song.newBuilder().setFrame(i).build());
 

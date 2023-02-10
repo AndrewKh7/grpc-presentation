@@ -11,10 +11,11 @@ public class Client {
     private static Client client = new Client();
     private static Player player;
     public static void main(String[] args) throws InterruptedException {
-        var ex = Executors.newFixedThreadPool(1);
         var channel = client.start();
         player = new Player(channel);
         player.playSong("Song100");
+        Thread.sleep(5000);
+        player.close();
 
 
         new Scanner(System.in).next();

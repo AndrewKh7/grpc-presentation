@@ -1,5 +1,6 @@
 package client;
 
+import io.grpc.Context;
 import io.grpc.ManagedChannel;
 import io.grpc.stub.ClientResponseObserver;
 import music.api.v1.Music;
@@ -15,6 +16,7 @@ public class Player {
     private final Queue<Integer> buff = new ArrayBlockingQueue<>(50);
     private final MusicServiceGrpc.MusicServiceStub stub;
     private PlayStreamHandler handler;
+    private Context.CancellableContext context;
     private boolean playingFlag;
 
     public Player(ManagedChannel channel) {
@@ -24,15 +26,16 @@ public class Player {
     public void playSong(String name) {
         var description = Music.SongDescription.newBuilder().setName(name).build();
         this.handler = new PlayStreamHandler(this, name);
-        stub.play(description, handler);
+        this.context = Context.current().withCancellation();
+        context.run(() -> stub.play(description, handler));
     }
     public void setFrame(int frame) {
-        if (buff.size() == 50) while (!buff.isEmpty()) {};
+        if (buff.size() == 50) while (!buff.isEmpty() || handler == null) {};
         buff.offer(frame);
     }
 
     public void play() {
-        if (playingFlag) return;
+        if (playingFlag || handler == null) return;
         playingFlag = true;
         executor.execute( () -> {
             try {
@@ -40,7 +43,7 @@ public class Player {
                     Thread.sleep(200);
                     System.out.println("playing: " + buff.poll());
                     if (buff.isEmpty()) {
-                        handler.requestData(100);
+                        if (handler != null) handler.requestData(100);
                         stop();
                     }
                 }
@@ -56,6 +59,7 @@ public class Player {
 
     public void close() {
         stop();
+        context.cancel(null);
         buff.clear();
     }
 }
