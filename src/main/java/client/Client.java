@@ -21,6 +21,7 @@ public class Client {
     private ManagedChannel start() {
         return ManagedChannelBuilder.forAddress("localhost", 9090)
                 .usePlaintext()
+                .intercept(new ClientInterceptor())
                 .build();
     }
 
