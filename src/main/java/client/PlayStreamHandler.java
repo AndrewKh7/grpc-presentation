@@ -41,7 +41,7 @@ public class PlayStreamHandler implements ClientResponseObserver<Music.SongDescr
         System.out.println("Playing completed: " + songName);
     }
 
-    public void requestData() {
-             requestStream.request(10);
+    public void requestData(int cnt) {
+             requestStream.request(cnt);
     }
 }
