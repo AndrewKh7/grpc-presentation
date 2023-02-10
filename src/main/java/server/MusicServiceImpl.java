@@ -1,5 +1,7 @@
 package server;
 
+import io.grpc.ServerCall;
+import io.grpc.stub.ServerCallStreamObserver;
 import music.api.v1.Music;
 import music.api.v1.MusicServiceGrpc;
 
@@ -34,11 +36,15 @@ public class MusicServiceImpl extends MusicServiceGrpc.MusicServiceImplBase {
     @Override
     public void play(music.api.v1.Music.SongDescription request,
                      io.grpc.stub.StreamObserver<music.api.v1.Music.Song> responseObserver) {
+        var observer = (ServerCallStreamObserver<Music.Song>) responseObserver;
+        observer.disableAutoRequest();
         var song = songs.get(request.getName());
-        Arrays.stream(song).forEach(v -> {
-            System.out.println(request.getName() + ": " + v);
-            responseObserver.onNext(Music.Song.newBuilder().setFrame(v).build());
-        });
-        responseObserver.onCompleted();
+        for(Integer i: song) {
+            while (!observer.isReady()) {}
+            System.out.println(request.getName() + ": " + i);
+            responseObserver.onNext(Music.Song.newBuilder().setFrame(i).build());
+
+        };
+        observer.onCompleted();
     }
 }
