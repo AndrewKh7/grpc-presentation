@@ -1,41 +1,41 @@
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.MoreExecutors;
 import io.grpc.ManagedChannelBuilder;
-import io.grpc.stub.StreamObserver;
 import music.api.v1.Music;
 import music.api.v1.MusicServiceGrpc;
 
-import javax.swing.plaf.synth.SynthTextAreaUI;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.Executors;
 
 public class Client {
 
     public static void main(String[] args) throws InterruptedException {
-        var cdl  = new CountDownLatch(100);
+        var cdl = new CountDownLatch(100);
         var channel = ManagedChannelBuilder.forAddress("localhost", 9090)
                 .usePlaintext()
                 .build();
-        var stub = MusicServiceGrpc.newStub(channel);
+        var stub = MusicServiceGrpc.newFutureStub(channel);
         var start = System.currentTimeMillis();
         System.out.println("Get playlist: ");
-        for (int i = 0; i <= 100; i++)
-            stub.getPlaylist(Music.PlayListRequest.newBuilder().build(), new StreamObserver<>() {
-
+        for (int i = 0; i < 100; i++) {
+            var res = stub.getPlaylist(Music.PlayListRequest.newBuilder().build());
+             res.addListener(cdl::countDown, MoreExecutors.directExecutor());
+            Futures.addCallback(res, new FutureCallback() {
                 @Override
-                public void onNext(Music.PlayList value) {
+                public void onSuccess(Object result) {
+                    //get results;
                 }
 
                 @Override
-                public void onError(Throwable t) {
+                public void onFailure(Throwable t) {
                 }
-
-                @Override
-                public void onCompleted() {
-                    cdl.countDown();
-                }
-            });
+            }, MoreExecutors.directExecutor());
+        }
         cdl.await();
         var end = System.currentTimeMillis();
         System.out.println("Time: " + (end - start));
+        channel.shutdown();
+
     }
 }
