@@ -10,6 +10,7 @@ public class Server {
         var server = ServerBuilder
                 .forPort(9090)
                 .addService(new MusicServiceImpl())
+                .intercept(new ServerInterceptor())
                 .build()
                 .start();
         System.out.println("Server started!");
