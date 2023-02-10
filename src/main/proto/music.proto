@@ -3,10 +3,15 @@ package music.api.v1;
 
 service MusicService {
   rpc getPlaylist(PlayListRequest) returns (PlayList);
+  rpc play(SongDescription) returns (stream Song);
 }
 
 message SongDescription {
   string name = 1;
+}
+
+message Song {
+  int32 frame = 1;
 }
 
 message PlayList {

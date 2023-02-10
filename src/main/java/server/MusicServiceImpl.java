@@ -3,6 +3,7 @@ package server;
 import music.api.v1.Music;
 import music.api.v1.MusicServiceGrpc;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -11,8 +12,11 @@ public class MusicServiceImpl extends MusicServiceGrpc.MusicServiceImplBase {
     private  final Map<String, int[]> songs = new ConcurrentHashMap<>();
 
     public MusicServiceImpl() {
-        songs.put("10", new int[] {1,2,3,4,5,6,7,8,9});
-        songs.put("100", new int[] {10,20,30,40,50,60,70,80,90});
+        songs.put("Song10", new int[] {1,2,3,4,5,6,7,8,9});
+        songs.put("Song100", new int[] {10,20,30,40,50,60,70,80,90});
+        var longSong = new int[10_000_000];
+        for (int i = 0; i < 10_000_000; i++) longSong[i] = 1000 + i + 1;
+        songs.put("Song100", longSong);
     }
 
     @Override
@@ -24,6 +28,17 @@ public class MusicServiceImpl extends MusicServiceGrpc.MusicServiceImplBase {
                 .collect(Collectors.toList());
         var playList = Music.PlayList.newBuilder().addAllSong(list).build();
         responseObserver.onNext(playList);
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void play(music.api.v1.Music.SongDescription request,
+                     io.grpc.stub.StreamObserver<music.api.v1.Music.Song> responseObserver) {
+        var song = songs.get(request.getName());
+        Arrays.stream(song).forEach(v -> {
+            System.out.println(request.getName() + ": " + v);
+            responseObserver.onNext(Music.Song.newBuilder().setFrame(v).build());
+        });
         responseObserver.onCompleted();
     }
 }
